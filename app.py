@@ -57,7 +57,7 @@ def update_user_by_id(uid):
 def get_all_users():
 	content = fire.call('apigee')
 	content = fire.encodeit(json.dumps(content))
-	return content, 201
+	return content, 200
 
 
 @app.route('/getuserbyid/<uid>')
@@ -72,7 +72,7 @@ def get_user_by_id(uid):
 		})
 	else:
 		content = fire.encodeit(json.dumps(content))
-		return content, 201
+		return content, 200
 
 
 @app.route('/deleteuserbyid/<uid>', methods=['DELETE'])
