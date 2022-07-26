@@ -15,20 +15,22 @@ def create_user():
 	elif content_type == 'application/json':
 		content = request.json
 
-		count = fire.call('counter')
-		fire.send('counter', count+1)
+	count = fire.call('counter')
+	uid = count+1
+	fire.send('counter', uid)
 
-		uid = count+1
-		content = fire.decodeit(json.dumps(content))
-		content = json.loads(content)
-		content['unique_ID'] = count
-		
-		_path = f"apigee/{uid}"
-		fire.send(_path, content)
-		return jsonify(content), 201
+	content = fire.decodeit(json.dumps(content))
+	content = json.loads(content)
+	content['unique_ID'] = uid
+	
+	_path = f"apigee/{uid}"
+	fire.send(_path, content)
+
+	content = fire.encodeit(json.dumps(content))
+	return content, 201
 
 
-@app.route('/updateuserbyid/<uid>', methods=['PUT'])
+# @app.route('/updateuserbyid/<uid>', methods=['PUT'])
 def update_user_by_id(uid):
 	content_type = request.headers.get('Content-Type')
 	
@@ -38,20 +40,24 @@ def update_user_by_id(uid):
 	elif content_type == 'application/json':
 		content = request.json
 
-		content = fire.call(f'apigee/{uid}')
-		content['fname'] = content['fname']
-		content['lname'] = content['lname']
-		content['age']   = content['age']
-		
-		_path = f"apigee/{uid}"
-		fire.send(_path, content)
-		return jsonify(content), 201
+	jsondata = fire.call(f'apigee/{uid}')
+	print(jsondata)
+	jsondata['fname'] = content['fname']
+	jsondata['lname'] = content['lname']
+	jsondata['age']   = content['age']
+	
+	_path = f"apigee/{uid}"
+	fire.send(_path, jsondata)
+	
+	content = fire.encodeit(json.dumps(jsondata))
+	return content, 201
 
 
 @app.route('/getallusers')
 def get_all_users():
-	data = fire.call('apigee')
-	return jsonify(data)
+	content = fire.call('apigee')
+	content = fire.encodeit(json.dumps(content))
+	return content, 201
 
 
 @app.route('/getuserbyid/<uid>')
@@ -65,7 +71,8 @@ def get_user_by_id(uid):
 			}
 		})
 	else:
-		return jsonify(content)
+		content = fire.encodeit(json.dumps(content))
+		return content, 201
 
 
 @app.route('/deleteuserbyid/<uid>', methods=['DELETE'])
