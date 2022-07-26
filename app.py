@@ -4,7 +4,7 @@ from fetch import fire
 
 app = Flask(__name__)
 
-@app.route('/createuser', methods=['GET', 'POST'])
+@app.route('/createuser', methods=['POST'])
 def create_user():
 	content_type = request.headers.get('Content-Type')
 	if content_type == 'application/json':
@@ -39,11 +39,12 @@ def get_user_by_id(uid):
 	else:
 		return jsonify(json_data)
 
-@app.route('/deleteuserbyid/<uid>', methods=['GET', 'POST', 'DELETE'])
+@app.route('/deleteuserbyid/<uid>', methods=['DELETE'])
 def delete_user_by_id(uid):
 	_path = f"apigee/{uid}"
 
 	if fire.call(_path) == None:
+		fire.send('counter', 1000)
 		return jsonify({
 			'message' : {
 				'description' : f'Unique ID {uid} not fount in Database.'
