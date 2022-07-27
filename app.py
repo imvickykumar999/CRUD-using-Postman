@@ -8,61 +8,109 @@ app = Flask(__name__)
 @app.route('/createuser', methods=['POST'])
 def create_user():
 	content_type = request.headers.get('Content-Type')
-	
-	if content_type == 'text/plain':
-		content = request.get_data().decode('ascii')
-	
-	elif content_type == 'application/json':
-		content = request.json
-
 	count = fire.call('counter')
 	uid = count+1
 	fire.send('counter', uid)
-
-	content = fire.decodeit(json.dumps(content))
-	content = json.loads(content)
-	content['unique_ID'] = uid
-	
 	_path = f"apigee/{uid}"
-	fire.send(_path, content)
 
-	content = fire.encodeit(json.dumps(content))
-	return content, 201
-
-
-# @app.route('/updateuserbyid/<uid>', methods=['PUT'])
-def update_user_by_id(uid):
-	content_type = request.headers.get('Content-Type')
-	
 	if content_type == 'text/plain':
 		content = request.get_data().decode('ascii')
-	
+		content = fire.decodeit(content)
+		content = json.loads(content)
+		content['unique_ID'] = uid
+		
+		fire.send(_path, content)
+		content = json.dumps(content)
+		content = fire.encodeit(content)
+		return content, 201
+
+	elif content_type == 'application/json':
+		content = request.json
+		
+		content['unique_ID'] = uid
+		fire.send(_path, content)
+		return content, 201
+		
+
+@app.route('/updateuserbyid/<uid>', methods=['PUT'])
+def update_user_by_id(uid):
+	content_type = request.headers.get('Content-Type')
+	_path = f"apigee/{uid}"
+	jsondata = fire.call(_path)
+
+	if jsondata == None:
+		return jsonify({
+			'error' : {
+				'description' : f'Unique ID {uid} not Found in Database.'
+			}
+		})
+
+	elif content_type == 'text/plain':
+		content = request.get_data().decode('ascii')
+		content = fire.decodeit(content)
+		content = json.loads(content)
+
+		try:
+			jsondata['fname'] = content['fname']
+		except:
+			pass
+
+		try:
+			jsondata['lname'] = content['lname']
+		except:
+			pass
+
+		try:
+			jsondata['age']   = content['age']
+		except:
+			pass
+		
+		fire.send(_path, jsondata)
+		content = json.dumps(jsondata)
+		content = fire.encodeit(content)
+		return content, 201
+		
 	elif content_type == 'application/json':
 		content = request.json
 
-	jsondata = fire.call(f'apigee/{uid}')
-	print(jsondata)
-	jsondata['fname'] = content['fname']
-	jsondata['lname'] = content['lname']
-	jsondata['age']   = content['age']
-	
-	_path = f"apigee/{uid}"
-	fire.send(_path, jsondata)
-	
-	content = fire.encodeit(json.dumps(jsondata))
-	return content, 201
+		try:
+			jsondata['fname'] = content['fname']
+		except:
+			pass
+
+		try:
+			jsondata['lname'] = content['lname']
+		except:
+			pass
+
+		try:
+			jsondata['age']   = content['age']
+		except:
+			pass
+
+		fire.send(_path, jsondata)
+		return jsondata, 201
+
+	else:
+		return jsonify({
+			'error' : {
+				'description' : f'content_type = {content_type} is not Supported.'
+			}
+		})
 
 
 @app.route('/getallusers')
 def get_all_users():
 	content = fire.call('apigee')
-	content = fire.encodeit(json.dumps(content))
+	content = json.dumps(content)
+	content = fire.encodeit(content)
 	return content, 200
 
 
 @app.route('/getuserbyid/<uid>')
 def get_user_by_id(uid):
-	content = fire.call(f'apigee/{uid}')
+	_path = f'apigee/{uid}'
+	content = fire.call(_path)
 
 	if content == None:
 		return jsonify({
@@ -70,8 +118,10 @@ def get_user_by_id(uid):
 				'description' : f'Unique ID {uid} not Found in Database.'
 			}
 		})
+
 	else:
-		content = fire.encodeit(json.dumps(content))
+		content = json.dumps(content)
+		content = fire.encodeit(content)
 		return content, 200
 
 
