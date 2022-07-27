@@ -1,0 +1,28 @@
+
+<!-- 
+https://www.w3schools.com/xml/xsl_intro.asp
+
+https://www.w3schools.com/xml/tryxslt.asp?xmlfile=cdcatalog&xsltfile=cdcatalog 
+-->
+
+<?xml version="1.0" encoding="UTF-8"?>
+<header>
+ <body>
+  <cd>
+    <username>abc</username>
+    <password>1234</password>
+  </cd>
+  <cd>
+    <username>def</username>
+    <password>5678</password>
+  </cd>
+  <cd>
+    <username>ghi</username>
+    <password>9012</password>
+  </cd>
+  <cd>
+    <username>jkl</username>
+    <password>3456</password>
+  </cd>
+ </body>
+</header>
